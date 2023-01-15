@@ -5,7 +5,7 @@ import model.entities.Department;
 
 public interface DepartmentDao {
     
-    void instet(Department obg);
+    void insert(Department obg);
     void update(Department obg);
     void deleteById(Integer id);
     void findById(Integer id);
