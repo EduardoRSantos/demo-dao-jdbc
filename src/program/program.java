@@ -1,13 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package program;
 
-/**
- *
- * @author Eduardo
- */
+import model.entities.Department;
+
 public class program {
-    
+    public static void main(String[] args) {
+        Department obg = new Department(1,"Books");
+        
+        System.out.println(obg);
+    }
 }
