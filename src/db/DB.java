@@ -1,6 +1,6 @@
 package db;
 
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,7 +34,7 @@ public class DB {
             }
         }
     }
-    public static void CloseStatement(Statement st){
+    public static void CloseStatement(PreparedStatement st){
         if(st != null){
             try {
                 st.close();
