@@ -1,9 +1,11 @@
 package model.dao.impl;
 
 import db.DB;
+import db.DbException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,12 +25,68 @@ public class SellerDaoJDBC implements SellerDao{
     
     @Override
     public void insert(Seller obg) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+
+        PreparedStatement st = null;
+        ResultSet rs = null;
+       
+        
+        try{
+            st = conn.prepareStatement(
+                "INSERT INTO seller "
+                + "(Name, Email, BirthDate, BaseSalary, DepartmentId) "
+                + "VALUES "
+                + "(?, ?, ?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS);
+            
+            st.setString(1, obg.getName());
+            st.setString(2, obg.getEmail());
+            st.setDate(3, new java.sql.Date(obg.getBirthDate().getTime()));
+            st.setDouble(4, obg.getBaseSalary());
+            st.setInt(5, obg.getDepartment().getId());
+            
+            int rows = st.executeUpdate();
+            
+            if(rows > 0){
+                rs = st.getGeneratedKeys();
+                if(rs.next()){
+                    int id = rs.getInt(1);
+                    obg.setId(id);
+                }
+            }else {
+            throw new DbException("Unexpected error! No rows affected");
+        }
+        }catch(SQLException e){
+            throw new DbException(e.getMessage());
+        }finally{
+            DB.CloseStatement(st);
+            DB.CloseResultSet(rs);
+        }
+        
     }
 
     @Override
     public void update(Seller obg) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try{
+            st = conn.prepareStatement(
+            "UPDATE seller SET Name = ?, Email = ?, BirthDate = ?, BaseSalary = ?, DepartmentId = ? WHERE Id = ?");
+            
+            st.setString(1, obg.getName());
+            st.setString(2, obg.getEmail());
+            st.setDate(3, new java.sql.Date(obg.getBirthDate().getTime()));
+            st.setDouble(4, obg.getBaseSalary());
+            st.setInt(5, obg.getDepartment().getId());
+            st.setInt(6, obg.getId());
+            
+            st.executeUpdate();
+            
+        }catch(SQLException e){
+            throw new DbException(e.getMessage());
+        }finally{
+            DB.CloseStatement(st);
+            DB.CloseResultSet(rs);
+        }
     }
 
     @Override
@@ -88,7 +146,7 @@ public class SellerDaoJDBC implements SellerDao{
 
     @Override
     public List<Seller> FindByDepartment(Department department) {
-        PreparedStatement st = null;
+       PreparedStatement st = null;
        ResultSet rs = null;
        
        try{
@@ -132,7 +190,44 @@ public class SellerDaoJDBC implements SellerDao{
     
     @Override
     public List<Seller> findAll() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        PreparedStatement st = null;
+       ResultSet rs = null;
+       
+       try{
+           st = conn.prepareStatement(
+                    "SELECT seller.*,department.Name as DepName "
+                    +"FROM seller INNER JOIN department "
+                    +"ON seller.DepartmentId = department.Id "
+                    +"ORDER BY Name"
+            );
+     
+           rs = st.executeQuery();
+           
+           List<Seller> list = new ArrayList<>();
+           Map<Integer, Department> map = new HashMap<>();
+           
+           while(rs.next()){
+
+               Department dep = map.get(rs.getInt("DepartmentId"));
+               
+               if(dep == null){
+                dep = instantiateDepartment(rs);
+                map.put(rs.getInt("DepartmentId"), dep);
+               }
+               
+               Seller obg = instantiateSeller(rs, dep);
+               list.add(obg);
+               
+           }
+           return list;
+       
+       }catch(SQLException e){
+           
+       }finally{
+           DB.CloseStatement(st);
+           DB.CloseResultSet(rs);
+       }
+        return null;
     }
     
 }
